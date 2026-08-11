@@ -21,6 +21,10 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
 
 /* USER CODE END Includes */
 
@@ -61,6 +65,22 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t CANSend(CAN_HandleTypeDef *hcan, uint32_t id, const uint8_t *data, uint8_t len){
+    CAN_TxHeaderTypeDef tx_header;
+    uint32_t tx_mailbox;
+
+    tx_header.StdId              = id & 0x7FFU;  /* 11bit標準ID */
+    tx_header.ExtId              = 0;
+    tx_header.IDE                = CAN_ID_STD;
+    tx_header.RTR                = CAN_RTR_DATA;
+    tx_header.DLC                = len;
+    tx_header.TransmitGlobalTime = DISABLE;
+
+    if (HAL_CAN_AddTxMessage(hcan, &tx_header, data, &tx_mailbox) != HAL_OK) {
+        return 1;
+    }
+    return 0;
+}
 
 /* USER CODE END 0 */
 
@@ -97,6 +117,8 @@ int main(void)
   MX_CAN2_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  HAL_CAN_Start(&hcan1);
+  HAL_CAN_Start(&hcan2);
 
   /* USER CODE END 2 */
 
@@ -126,7 +148,7 @@ int main(void)
 
   //ボタン押し回数
   int mode = 0;
-  int maxMode = 7;
+  int maxMode = 6;
 
   //前回のボタン押し状態
   uint8_t pre = 0;
@@ -151,8 +173,7 @@ int main(void)
     3. 丼停止、サーボ角度 (回収完了)
     4. 丼逆転、サーボ角度  (放出)
     5. 丼停止、サーボ角度　(放出完了・一時停止)
-    6. 丼停止、サーボ0　(リロード)
-    7. 0に戻る
+    6. 0に戻る
     
     */
 
@@ -187,17 +208,6 @@ int main(void)
         fin_don_output = 0;
         fin_servo_output = servo_output;
         break;
-      case 6:
-      //リロード
-        fin_don_output = 0;
-        fin_servo_output = 0;
-        break;
-      case 7:
-      //初期状態に戻る
-        fin_don_output = 0;
-        fin_servo_output = 0;
-        mode = 0;
-        break;
       default:
         fin_don_output = 0;
         fin_servo_output = 0;
@@ -205,7 +215,6 @@ int main(void)
         break; 
     }
 
-  
     //出力値を配列に格納
     for(int i = 0; i < 4; i++) {
       pwm[i] = fin_don_output;
@@ -216,7 +225,7 @@ int main(void)
     }
 
     //現在の出力を表示
-    printf("don=%d, servo=%d\r\n", fin_don_output, fin_servo_output);
+    printf("mode=%d, don=%d, servo=%d\r\n", mode, fin_don_output, fin_servo_output);
 
     CANSend(&hcan1, don_id, (const uint8_t *)pwm, 8);
     CANSend(&hcan2, don_id, (const uint8_t *)pwm, 8);
@@ -429,6 +438,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+int __io_putchar(int ch)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+    return ch;
+}
 
 /* USER CODE END 4 */
 
