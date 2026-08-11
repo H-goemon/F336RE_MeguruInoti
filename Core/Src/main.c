@@ -126,7 +126,7 @@ int main(void)
 
   //ボタン押し回数
   int mode = 0;
-  int maxMode = 6;
+  int maxMode = 7;
 
   //前回のボタン押し状態
   uint8_t pre = 0;
@@ -150,37 +150,49 @@ int main(void)
     2. 丼正転、サーボ角度 (回収)
     3. 丼停止、サーボ角度 (回収完了)
     4. 丼逆転、サーボ角度  (放出)
-    5. 丼停止、サーボ0　(リロード)
-    6. 0に戻る
+    5. 丼停止、サーボ角度　(放出完了・一時停止)
+    6. 丼停止、サーボ0　(リロード)
+    7. 0に戻る
     
     */
 
     switch(mode){
       case 0:
+      //丼停止、サーボ0
         fin_don_output = 0;
         fin_servo_output = 0;
         break;
       case 1:
+      //丼停止、サーボ角度
        fin_don_output = 0;
        fin_servo_output = servo_output;
         break;
       case 2:
+      //丼正転、サーボ角度
         fin_don_output = susumi;
         fin_servo_output = servo_output;
         break;
       case 3:
+      //丼停止、サーボ角度
         fin_don_output = 0;
         fin_servo_output = servo_output;
         break;
       case 4:
+      //丼逆転、サーボ角度
         fin_don_output = modori;
         fin_servo_output = servo_output;
         break;
       case 5:
+      //丼停止、サーボ角度
+        fin_don_output = 0;
+        fin_servo_output = servo_output;
+        break;
+      case 6:
+      //丼停止、サーボ0
         fin_don_output = 0;
         fin_servo_output = 0;
         break;
-      case 6:
+      case 7:
         fin_don_output = 0;
         fin_servo_output = 0;
         mode = 0;
