@@ -158,41 +158,42 @@ int main(void)
 
     switch(mode){
       case 0:
-      //丼停止、サーボ0
+      //初期状態
         fin_don_output = 0;
         fin_servo_output = 0;
         break;
       case 1:
-      //丼停止、サーボ角度
+      //回収準備
        fin_don_output = 0;
        fin_servo_output = servo_output;
         break;
       case 2:
-      //丼正転、サーボ角度
+      //回収中
         fin_don_output = susumi;
         fin_servo_output = servo_output;
         break;
       case 3:
-      //丼停止、サーボ角度
+      //回収完了
         fin_don_output = 0;
         fin_servo_output = servo_output;
         break;
       case 4:
-      //丼逆転、サーボ角度
+      //放出中
         fin_don_output = modori;
         fin_servo_output = servo_output;
         break;
       case 5:
-      //丼停止、サーボ角度
+      //放出完了・一時停止
         fin_don_output = 0;
         fin_servo_output = servo_output;
         break;
       case 6:
-      //丼停止、サーボ0
+      //リロード
         fin_don_output = 0;
         fin_servo_output = 0;
         break;
       case 7:
+      //初期状態に戻る
         fin_don_output = 0;
         fin_servo_output = 0;
         mode = 0;
