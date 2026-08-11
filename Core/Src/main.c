@@ -125,7 +125,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   
-  //githubのお試し
   //出力の配列
   int16_t pwm[4] = {0, 0, 0, 0};
   uint8_t servo[8] = {0, 0, 0, 0, 0, 0, 0, 0};
