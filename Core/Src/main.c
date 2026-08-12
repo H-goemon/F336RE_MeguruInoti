@@ -157,7 +157,6 @@ int main(void)
   while (1)
   {
     uint8_t now = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
-
     uint8_t limit = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);
 
     // 立ち上がりエッジのみ検出する
@@ -177,6 +176,8 @@ int main(void)
     4. 丼逆転、サーボ角度  (放出)
     5. 丼停止、サーボ角度　(放出完了・一時停止)
     6. 0に戻る
+
+    また、放出中にlimitを踏んだら、段階5に進む
     
     */
 
