@@ -158,6 +158,7 @@ int main(void)
   {
     uint8_t now = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
     uint8_t limit = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);
+    uint8_t kaishuMove = 0;
 
     // 立ち上がりエッジのみ検出する
     if(now && !pre){
@@ -224,6 +225,14 @@ int main(void)
       fin_don_output = 0;
       fin_servo_output = 0;
       mode = 5;
+    }
+
+    if(mode == 2 && kaishuMove){
+      fin_don_output = susumi;
+    }else if(mode == 2 && !kaishuMove){
+      fin_don_output = 0;
+    }else {
+      fin_don_output = fin_don_output;
     }
 
     //出力値を配列に格納
