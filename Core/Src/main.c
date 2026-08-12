@@ -148,7 +148,7 @@ int main(void)
   int TxInterval = 10; // ms
 
   //ボタン押し回数
-  int mode = 0;
+  int mode = 0;  
   int maxMode = 6;
 
   //前回のボタン押し状態
@@ -163,6 +163,7 @@ int main(void)
     uint8_t now = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);  //mode変更用
     uint8_t limit = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);  //初期位置検知用
     uint8_t kaishuMove = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);  //回収制御用
+    uint8_t resetPos = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2);  //初期位置に戻す用
 
     // 立ち上がりエッジのみ検出し、modeを進める
     if(now && !pre){
@@ -232,21 +233,18 @@ int main(void)
         break; 
     }
 
+    //回収モードのときに、回収リミスイを押したら回らないようにする
+    if(mode == 2 && kaishuMove) fin_don_output = 0;
+
+    //放出中にlimitを踏んだときの動作
     if(mode == 4 && limit){
-      //放出中にlimitを踏んだときの動作
       fin_don_output = 0;
       fin_servo_output = 0;
       mode = 5;
     }
 
-    //回収モードのときに、回収リミットを押していないと回らないようにする
-    if(mode == 2 && kaishuMove){
-      fin_don_output = susumi;
-    }else if(mode == 2 && !kaishuMove){
-      fin_don_output = 0;
-    }else {
-      fin_don_output = fin_don_output;
-    }
+    //初期位置に戻すボタンを押されたら、modeを4にする
+    if(resetPos) mode = 4;
 
     //出力値を配列に格納
     for(int i = 0; i < 4; i++) {
@@ -265,8 +263,6 @@ int main(void)
 
     CANSend(&hcan1, servo_id, servo, 8);
     CANSend(&hcan2, servo_id, servo, 8);
-
-    // printf("mode=%d, don=%d, servo=%d\r\n", mode, fin_don_output, fin_servo_output);
 
     pre = now; 
     HAL_Delay(TxInterval); 
