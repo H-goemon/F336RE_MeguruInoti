@@ -154,13 +154,17 @@ int main(void)
   //前回のボタン押し状態
   uint8_t pre = 0;
 
+  printf("このプログラムは「巡る命」実験用プログラム\r\n");
+  printf("サーボ角度:%d, 回収速度:%d, 放出速度:%d \r\n", servo_output, susumi, modori);
+
   while (1)
   {
-    uint8_t now = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
-    uint8_t limit = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);
-    uint8_t kaishuMove = 0;
+    //入力変数
+    uint8_t now = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);  //mode変更用
+    uint8_t limit = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);  //初期位置検知用
+    uint8_t kaishuMove = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);  //回収制御用
 
-    // 立ち上がりエッジのみ検出する
+    // 立ち上がりエッジのみ検出し、modeを進める
     if(now && !pre){
       mode++;
       if(mode > maxMode){
@@ -173,6 +177,8 @@ int main(void)
     0. 丼停止、サーボ0  (初期状態)
     1. 丼停止、サーボ角度 (サーボ準備)
     2. 丼正転、サーボ角度 (回収)
+    →回収ボタンを押したら、回転させる。
+     押していなければ止める。
     3. 丼停止、サーボ角度 (回収完了)
     4. 丼逆転、サーボ角度  (放出)
     5. 丼停止、サーボ角度　(放出完了・一時停止)
@@ -185,31 +191,37 @@ int main(void)
     switch(mode){
       case 0:
       //初期状態
+        printf("初期位置, ");
         fin_don_output = 0;
         fin_servo_output = 0;
         break;
       case 1:
       //回収準備
+        printf("回収準備, ");
        fin_don_output = 0;
        fin_servo_output = servo_output;
         break;
       case 2:
       //回収中
+        printf("回収なう, ");
         fin_don_output = susumi;
         fin_servo_output = servo_output;
         break;
       case 3:
       //回収完了
+        printf("回収完了, ");
         fin_don_output = 0;
         fin_servo_output = servo_output;
         break;
       case 4:
       //放出中
+        printf("放出なう, ");
         fin_don_output = modori;
         fin_servo_output = servo_output;
         break;
       case 5:
       //放出完了・一時停止
+        printf("放出完了, ");
         fin_don_output = 0;
         fin_servo_output = servo_output;
         break;
@@ -227,6 +239,7 @@ int main(void)
       mode = 5;
     }
 
+    //回収モードのときに、回収リミットを押していないと回らないようにする
     if(mode == 2 && kaishuMove){
       fin_don_output = susumi;
     }else if(mode == 2 && !kaishuMove){
@@ -445,8 +458,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PC0 */
-  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  /*Configure GPIO pins : PC0 PC1 PC2 PC3 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
