@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stm32f4xx_hal_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -157,6 +158,8 @@ int main(void)
   {
     uint8_t now = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
 
+    uint8_t limit = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);
+
     // 立ち上がりエッジのみ検出する
     if(now && !pre){
       mode++;
@@ -215,6 +218,13 @@ int main(void)
         break; 
     }
 
+    if(mode == 4 && limit){
+      //放出中にlimitを踏んだときの動作
+      fin_don_output = 0;
+      fin_servo_output = 0;
+      mode = 5;
+    }
+
     //出力値を配列に格納
     for(int i = 0; i < 4; i++) {
       pwm[i] = fin_don_output;
@@ -225,7 +235,7 @@ int main(void)
     }
 
     //現在の出力を表示
-    printf("mode=%d, don=%d, servo=%d\r\n", mode, fin_don_output, fin_servo_output);
+    printf("mode=%d, limit= %d, don=%d, servo=%d\r\n", mode, limit, fin_don_output, fin_servo_output);
 
     CANSend(&hcan1, don_id, (const uint8_t *)pwm, 8);
     CANSend(&hcan2, don_id, (const uint8_t *)pwm, 8);
@@ -424,6 +434,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PC0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
