@@ -162,7 +162,7 @@ int main(void)
     //入力変数
     uint8_t now = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);  //mode変更用
     uint8_t limit = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);  //初期位置検知用
-    uint8_t kaishuMove = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);  //回収制御用
+    uint8_t kaishuStop = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);  //回収制御用
     uint8_t resetPos = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2);  //初期位置に戻す用
 
     // 立ち上がりエッジのみ検出し、modeを進める
@@ -178,14 +178,15 @@ int main(void)
     0. 丼停止、サーボ0  (初期状態)
     1. 丼停止、サーボ角度 (サーボ準備)
     2. 丼正転、サーボ角度 (回収)
-    →回収ボタンを押したら、回転させる。
      押していなければ止める。
     3. 丼停止、サーボ角度 (回収完了)
     4. 丼逆転、サーボ角度  (放出)
     5. 丼停止、サーボ角度　(放出完了・一時停止)
     6. 0に戻る
 
-    また、放出中にlimitを踏んだら、段階5に進む
+    段階2の回収中に回収ストップボタンを押されたら、一瞬止められる。
+    放出中にlimitを踏んだら、段階5に進む
+    棒位置リセットボタンを押されたら、段階4にする
     
     */
 
@@ -234,7 +235,7 @@ int main(void)
     }
 
     //回収モードのときに、回収リミスイを押したら回らないようにする
-    if(mode == 2 && kaishuMove) fin_don_output = 0;
+    if(mode == 2 && kaishuStop) fin_don_output = 0;
 
     //放出中にlimitを踏んだときの動作
     if(mode == 4 && limit){
