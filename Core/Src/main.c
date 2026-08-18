@@ -193,37 +193,31 @@ int main(void)
     switch(mode){
       case 0:
       //初期状態
-        printf("初期位置, ");
         fin_don_output = 0;
         fin_servo_output = 0;
         break;
       case 1:
       //回収準備
-        printf("回収準備, ");
        fin_don_output = 0;
        fin_servo_output = servo_output;
         break;
       case 2:
       //回収中
-        printf("回収なう, ");
         fin_don_output = susumi;
         fin_servo_output = servo_output;
         break;
       case 3:
       //回収完了
-        printf("回収完了, ");
         fin_don_output = 0;
         fin_servo_output = servo_output;
         break;
       case 4:
       //放出中
-        printf("放出なう, ");
         fin_don_output = modori;
         fin_servo_output = servo_output;
         break;
       case 5:
       //放出完了・一時停止
-        printf("放出完了, ");
         fin_don_output = 0;
         fin_servo_output = servo_output;
         break;
