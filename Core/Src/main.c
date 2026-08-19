@@ -99,7 +99,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -131,7 +131,7 @@ int main(void)
   uint8_t servo[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
   //モータの出力値
-  int16_t susumi = -12000;  //回収スピード
+  int16_t susumi = -15000;  //回収スピード
   int16_t modori = 20000;   //放出スピード
   //サーボの回転角
   uint8_t servo_output = 64;  // (45 / 180)*255 = 63.75
