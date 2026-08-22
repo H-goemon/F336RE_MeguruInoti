@@ -134,7 +134,11 @@ int main(void)
   int16_t susumi = -15000;  //回収スピード
   int16_t modori = 20000;   //放出スピード
   //サーボの回転角
-  uint8_t servo_output = 64;  // (45 / 180)*255 = 63.75
+  uint8_t servo_output = 32;  
+  /*
+  サーボ角度について
+  今までは64/255だったが、実験でベストな角度が変わった
+  */
 
   //最終出力値
   int16_t fin_don_output = 0;
@@ -152,7 +156,8 @@ int main(void)
   int maxMode = 6;
 
   //前回のボタン押し状態
-  uint8_t pre = 0;
+  uint8_t forwardPre = 0;
+  uint8_t backPre = 0;
 
   printf("このプログラムは「巡る命」実験用プログラム\r\n");
   printf("サーボ角度:%d, 回収速度:%d, 放出速度:%d \r\n", servo_output, susumi, modori);
@@ -160,16 +165,23 @@ int main(void)
   while (1)
   {
     //入力変数
-    uint8_t now = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);  //mode変更用
+    uint8_t forwardNow = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);  //mode変更用
     uint8_t limit = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);  //初期位置検知用
-    uint8_t kaishuStop = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);  //回収制御用
+    uint8_t backNow = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);  //回収制御用
     uint8_t resetPos = !HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2);  //初期位置に戻す用
 
     // 立ち上がりエッジのみ検出し、modeを進める
-    if(now && !pre){
+    if(forwardNow && !forwardPre){
       mode++;
       if(mode > maxMode){
         mode = 0;
+      }
+    }
+
+    if(backNow && !backPre){
+      mode--;
+      if(mode < 0){
+        mode = maxMode;
       }
     }
 
@@ -229,7 +241,7 @@ int main(void)
     }
 
     //回収モードのときに、回収リミスイを押したら回らないようにする
-    if(mode == 2 && kaishuStop) fin_don_output = 0;
+    // if(mode == 2 && kaishuStop) fin_don_output = 0;
 
     //放出中にlimitを踏んだときの動作
     if(mode == 4 && limit){
@@ -259,7 +271,8 @@ int main(void)
     CANSend(&hcan1, servo_id, servo, 8);
     CANSend(&hcan2, servo_id, servo, 8);
 
-    pre = now; 
+    forwardPre = forwardNow;
+    backPre = backNow;
     HAL_Delay(TxInterval); 
     /* USER CODE END WHILE */
 
